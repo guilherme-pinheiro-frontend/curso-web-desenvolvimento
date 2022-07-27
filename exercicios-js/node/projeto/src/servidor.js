@@ -1,26 +1,21 @@
-// Portas são únicas por requisição. Utilizando o método http, a porta padrão é 80
-
 const porta = 3003
-
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-const bancoDeDados = require('./bancoDeDados')
+const bancoDeDados = require('./bancoDeDados.js')
 
-app.use(bodyParser.urlencoded({ extended: true}))
-
-app.get('/produtos', (req, res, next) => {
-  console.log('Middleware 1...')
-  next()
+/*app.use((req, res, next) => {
+  res.send({ nome: 'Notebook', preco: 123.45}) // Converter para JSON
 })
+Podemos usar o .use para que as requisições sejam atendidas sem passar a url completa. .use passa a ser atendido para todas as requisições.*/
 
-// App.get = método de requisição ---- App.sendo = método de resposta.
-// Ao chamar o método send,  ele acaba convertendo o obj passado para JSON automaticamente.
-app.get('/produtos', (req, res, next) => {
+app.use(bodyParser.urlencoded({ extended: true })) // Função utilizada com a extensão body-parser para que possamos postar as strings corretamente no servidor. Utilizando o .use dessa forma, todo e qualquer informe para realizar o post passará por esse .use
+
+app.get('/produtos',(req, res, next) => {
   res.send(bancoDeDados.getProdutos())
 })
 
-app.get('produtos/:id', (req, res, next) => {
+app.get('/produtos/:id', (req, res, next) => {
   res.send(bancoDeDados.getProduto(req.params.id))
 })
 
@@ -34,14 +29,20 @@ app.post('/produtos', (req, res, next) => {
 
 app.put('/produtos/:id', (req, res, next) => {
   const produto = bancoDeDados.salvarProduto({
-    id: req.params.id,
     nome: req.body.nome,
-    preco: req.body.preco
+    preco: req.body.preco,
+    id: req.params.id
   })
   res.send(produto) // JSON
 })
 
+app.delete('/produtos/:id', (req, res, next) => {
+  const produto = bancoDeDados.deletarProduto(req.params.id)
+  res.send(produto) // JSON
+})
 
+app.listen(porta, () => {
+  console.log(`Servidor executando na porta ${porta}`)
+})
 
-
-app.listen(porta, () => console.log(`Servidor executando na porta ${porta}.`))
+// Realizamos o CRUD (Create, Read, Update e Delete)
